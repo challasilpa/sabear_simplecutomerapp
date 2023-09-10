@@ -1,0 +1,56 @@
+pipeline {
+    agent any
+
+    environment {
+        TOMCAT_URL = 'http://localhost:8080' // URL of your Tomcat server
+        TOMCAT_MANAGER_USERNAME = 'admin'     // Tomcat Manager username
+        TOMCAT_MANAGER_PASSWORD = 'password' // Tomcat Manager password
+        WAR_FILE = 'your-app.war'           // Name of your WAR file
+        CONTEXT_PATH = 'your-app'            // Context path for your application
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // Checkout the code from your version control system (e.g., Git).
+                // You can replace this with the appropriate SCM tool and repository URL.
+                checkout scm
+            }
+        }
+
+        stage('Build') {
+            steps {
+                // Perform any build steps here (e.g., compile code, run tests).
+                // Replace with your build commands.
+                sh 'echo "Building the project"'
+            }
+        }
+
+        stage('Deploy to Tomcat') {
+            steps {
+                // Deploy the WAR file to Tomcat using the Deploy to Container plugin.
+                // Replace 'Tomcat 8.x' with the version of your Tomcat server.
+                deployAdapter(
+                    adapters: [tomcat8(credentialsId: 'tomcat-credentials', url: env.TOMCAT_URL)],
+                    contextPath: env.CONTEXT_PATH,
+                    war: env.WAR_FILE
+                )
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Deployment successful! Application should be accessible at ${env.TOMCAT_URL}/${env.CONTEXT_PATH}"
+        }
+        
+        failure {
+            echo "Deployment failed!"
+        }
+    }
+}
+
+
+
+
+
