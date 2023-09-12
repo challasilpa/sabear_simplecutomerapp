@@ -1,0 +1,40 @@
+pipeline {
+    agent any
+    
+    environment {
+        DOCKER_IMAGE_NAME = "your-dockerhub-username/your-tomcat:v1" 
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    def dockerImage = docker.build(env.DOCKER_IMAGE_NAME, ".")
+                }
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                script {
+                    docker.withRegistry('https://registry.hub.docker.com', 'username=silpachalla''password=9705753@668) {
+                        def dockerImage = docker.image(env.DOCKER_IMAGE_NAME)
+                        dockerImage.push()
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Docker image built and pushed successfully!"
+        }
+    }
+}
